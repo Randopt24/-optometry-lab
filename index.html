@@ -1,20 +1,337 @@
-<!doctype html>
-<html lang="ar" dir="rtl">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>Optometry Interactive Lab</title>
-    <meta name="description" content="مختبر بصريات تفاعلي — تعلّم فحص المريض عبر محاكاة ثلاثية الأبعاد" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Tajawal:wght@400;500;700&display=swap"
-      rel="stylesheet"
-    />
-  </head>
-  <body>
-    <div id="root"></div>
-    <
-      ><script type="module" src="/main.jsx"></script>
-  </body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Optometry Lab &mdash; Virtual Clinical Simulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ============ TOP BAR ============ -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">&#9673;</span>
+      <div class="brand-text">
+        <strong>Optometry Lab</strong>
+        <small>Virtual Clinical Simulator</small>
+      </div>
+    </div>
+
+    <div class="patient-chip" id="patientChip">
+      <span class="chip-label">Patient</span>
+      <span class="chip-name" id="patientName">&mdash;</span>
+      <span class="chip-id" id="patientId">Case #000</span>
+    </div>
+
+    <button class="btn btn-ghost" id="newPatientBtn" title="Generate a new patient case">New Patient</button>
+  </header>
+
+  <!-- ============ MAIN STAGE ============ -->
+  <main class="stage-wrap">
+
+    <div class="stage" id="stage">
+      <div class="world" id="world">
+        <div class="camera" id="camera">
+
+          <!-- ROOM BACKGROUND -->
+          <svg class="room-svg" viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <linearGradient id="wallGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#1c2d42"/>
+                <stop offset="100%" stop-color="#152234"/>
+              </linearGradient>
+              <linearGradient id="floorGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#0e1826"/>
+                <stop offset="100%" stop-color="#0a121d"/>
+              </linearGradient>
+              <radialGradient id="skinGrad" cx="42%" cy="32%" r="75%">
+                <stop offset="0%" stop-color="#f2c9a6"/>
+                <stop offset="60%" stop-color="#e3ac82"/>
+                <stop offset="100%" stop-color="#c98f68"/>
+              </radialGradient>
+              <radialGradient id="irisGrad" cx="50%" cy="45%" r="60%">
+                <stop offset="0%" stop-color="#8a5a34"/>
+                <stop offset="55%" stop-color="#5c3c22"/>
+                <stop offset="100%" stop-color="#2c1c10"/>
+              </radialGradient>
+            </defs>
+
+            <!-- wall / floor -->
+            <rect x="0" y="0" width="1200" height="520" fill="url(#wallGrad)"/>
+            <rect x="0" y="520" width="1200" height="180" fill="url(#floorGrad)"/>
+            <rect x="0" y="515" width="1200" height="6" fill="#0a1420"/>
+
+            <!-- wall panel lines for depth -->
+            <g opacity="0.12" stroke="#8fb4d9" stroke-width="2">
+              <line x1="0" y1="180" x2="1200" y2="180"/>
+              <line x1="500" y1="0" x2="500" y2="520"/>
+            </g>
+
+            <!-- ================= SNELLEN CHART ON WALL ================= -->
+            <g id="wallChart" class="clickable-equip" data-exam="acuity">
+              <rect x="55" y="70" width="230" height="330" rx="6" fill="#0c1420" stroke="#3a5068" stroke-width="3"/>
+              <rect x="55" y="70" width="230" height="330" rx="6" fill="#eef1f4" opacity="0.97" transform="translate(6,6) scale(0.949,0.964)"/>
+              <text x="170" y="102" font-family="IBM Plex Mono" font-size="40" text-anchor="middle" fill="#111">E</text>
+              <text x="170" y="140" font-family="IBM Plex Mono" font-size="28" text-anchor="middle" fill="#111">F P</text>
+              <text x="170" y="170" font-family="IBM Plex Mono" font-size="20" text-anchor="middle" fill="#111">T O Z</text>
+              <text x="170" y="195" font-family="IBM Plex Mono" font-size="15" text-anchor="middle" fill="#111">L P E D</text>
+              <text x="170" y="215" font-family="IBM Plex Mono" font-size="12" text-anchor="middle" fill="#111">P E C F D</text>
+              <text x="170" y="231" font-family="IBM Plex Mono" font-size="10" text-anchor="middle" fill="#111">E D F C Z P</text>
+              <text x="170" y="245" font-family="IBM Plex Mono" font-size="8" text-anchor="middle" fill="#111">F E L O P Z D</text>
+              <text x="170" y="257" font-family="IBM Plex Mono" font-size="6.5" text-anchor="middle" fill="#111">D E F P O T E C</text>
+              <rect x="55" y="70" width="230" height="330" rx="6" fill="none" stroke="#4a6480" stroke-width="2"/>
+              <text x="170" y="418" font-family="Inter" font-size="13" text-anchor="middle" fill="#7f9ab6">SNELLEN CHART &middot; click to test</text>
+            </g>
+
+            <!-- ================= EQUIPMENT CART ================= -->
+            <g id="equipAutorefractor" class="clickable-equip" data-exam="autorefraction" transform="translate(340,430)">
+              <rect x="-46" y="30" width="92" height="14" rx="3" fill="#233953"/>
+              <rect x="-38" y="-10" width="76" height="45" rx="6" fill="#2c4763" stroke="#4f7196" stroke-width="2"/>
+              <circle cx="0" cy="8" r="15" fill="#0d1620" stroke="#6fb8c9" stroke-width="3"/>
+              <circle cx="0" cy="8" r="6" fill="#59d6c4" opacity="0.8"/>
+              <rect x="-6" y="-32" width="12" height="24" rx="3" fill="#33506e"/>
+              <text x="0" y="60" font-family="Inter" font-size="12" text-anchor="middle" fill="#7f9ab6">AUTOREFRACTOR</text>
+            </g>
+
+            <g id="equipRetinoscope" class="clickable-equip" data-exam="retinoscopy" transform="translate(470,430)">
+              <rect x="-40" y="30" width="80" height="12" rx="3" fill="#233953"/>
+              <rect x="-14" y="-16" width="28" height="46" rx="8" fill="#3a5a78" stroke="#6fb8c9" stroke-width="2"/>
+              <circle cx="0" cy="-20" r="9" fill="#ffd98a" stroke="#c99b3f" stroke-width="2"/>
+              <line x1="0" y1="-29" x2="0" y2="-40" stroke="#c99b3f" stroke-width="3"/>
+              <text x="0" y="60" font-family="Inter" font-size="12" text-anchor="middle" fill="#7f9ab6">RETINOSCOPE</text>
+            </g>
+
+            <!-- ================= EXAM CHAIR ================= -->
+            <g transform="translate(770,300)">
+              <ellipse cx="0" cy="330" rx="230" ry="30" fill="#050b12" opacity="0.5"/>
+              <path d="M-160,150 L-190,340 L190,340 L160,150 Z" fill="#2b4258"/>
+              <path d="M-150,150 L-150,-40 Q-150,-70 -110,-70 L110,-70 Q150,-70 150,-40 L150,150 Z" fill="#33506e" stroke="#1b2c3d" stroke-width="4"/>
+              <rect x="-165" y="-80" width="30" height="230" rx="14" fill="#2b4258" stroke="#1b2c3d" stroke-width="3"/>
+              <rect x="135" y="-80" width="30" height="230" rx="14" fill="#2b4258" stroke="#1b2c3d" stroke-width="3"/>
+              <rect x="-30" y="-190" width="60" height="130" rx="20" fill="#33506e" stroke="#1b2c3d" stroke-width="3"/>
+              <rect x="-95" y="150" width="190" height="24" rx="10" fill="#233953"/>
+              <rect x="-14" y="-260" width="28" height="80" rx="10" fill="#233953"/>
+            </g>
+
+          </svg>
+
+          <!-- ================= PATIENT (SVG, absolutely positioned in world space) ================= -->
+          <svg id="patientSvg" class="patient-svg" viewBox="0 0 420 480" style="left:580px; top:60px; width:420px; height:480px;">
+            <defs>
+              <radialGradient id="cheekGrad" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#d97a5c" stop-opacity="0.35"/>
+                <stop offset="100%" stop-color="#d97a5c" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+
+            <!-- neck / shoulders -->
+            <path d="M150,360 L150,440 Q210,470 270,440 L270,360 Z" fill="url(#skinGrad)"/>
+            <path d="M60,480 Q210,400 360,480 L360,480 L60,480 Z" fill="#3a5674"/>
+            <path d="M40,480 Q210,380 380,480 Z" fill="#2c4460"/>
+
+            <!-- ears -->
+            <ellipse cx="62" cy="230" rx="16" ry="26" fill="url(#skinGrad)"/>
+            <ellipse cx="358" cy="230" rx="16" ry="26" fill="url(#skinGrad)"/>
+
+            <!-- head -->
+            <ellipse cx="210" cy="215" rx="148" ry="180" fill="url(#skinGrad)"/>
+
+            <!-- hair -->
+            <path d="M62,190 Q40,40 210,32 Q380,40 358,190 Q358,120 300,100 Q290,150 250,120 Q230,80 210,120 Q190,80 170,120 Q130,150 120,100 Q62,120 62,190Z" fill="#2c2016"/>
+
+            <!-- cheeks -->
+            <circle cx="130" cy="270" r="46" fill="url(#cheekGrad)"/>
+            <circle cx="290" cy="270" r="46" fill="url(#cheekGrad)"/>
+
+            <!-- eyebrows -->
+            <path d="M105,168 Q150,148 195,166" fill="none" stroke="#2c2016" stroke-width="9" stroke-linecap="round"/>
+            <path d="M225,166 Q270,148 315,168" fill="none" stroke="#2c2016" stroke-width="9" stroke-linecap="round"/>
+
+            <!-- ============ RIGHT EYE (patient's OD, image-left) ============ -->
+            <g id="eye-OD" class="eye-group">
+              <ellipse cx="150" cy="200" rx="10" ry="4" fill="#00000022"/>
+              <ellipse class="sclera" cx="150" cy="196" rx="30" ry="17" fill="#f7f4ee"/>
+              <circle class="iris" cx="150" cy="196" r="13.5" fill="url(#irisGrad)"/>
+              <circle class="pupil" cx="150" cy="196" r="6" fill="#0a0805"/>
+              <circle class="catchlight" cx="146" cy="192" r="2.6" fill="#fff" opacity="0.9"/>
+              <path class="lid-lower" d="M122,205 Q150,214 178,205" fill="none" stroke="#c98f68" stroke-width="2" opacity="0.6"/>
+              <g class="eyelid-upper" style="transform-origin: 150px 183px;">
+                <path d="M118,183 Q150,225 182,183 Q150,178 118,183Z" fill="#e3ac82"/>
+              </g>
+              <path class="lid-crease" d="M116,181 Q150,158 184,181" fill="none" stroke="#c98f68" stroke-width="2" opacity="0.55"/>
+              <g class="occluder-OD" style="display:none;">
+                <ellipse cx="150" cy="196" rx="40" ry="30" fill="#1b2431" stroke="#0a1018" stroke-width="4"/>
+                <rect x="146" y="220" width="8" height="90" rx="4" fill="#1b2431"/>
+              </g>
+            </g>
+
+            <!-- ============ LEFT EYE (patient's OS, image-right) ============ -->
+            <g id="eye-OS" class="eye-group">
+              <ellipse cx="270" cy="200" rx="10" ry="4" fill="#00000022"/>
+              <ellipse class="sclera" cx="270" cy="196" rx="30" ry="17" fill="#f7f4ee"/>
+              <circle class="iris" cx="270" cy="196" r="13.5" fill="url(#irisGrad)"/>
+              <circle class="pupil" cx="270" cy="196" r="6" fill="#0a0805"/>
+              <circle class="catchlight" cx="266" cy="192" r="2.6" fill="#fff" opacity="0.9"/>
+              <path class="lid-lower" d="M242,205 Q270,214 298,205" fill="none" stroke="#c98f68" stroke-width="2" opacity="0.6"/>
+              <g class="eyelid-upper" style="transform-origin: 270px 183px;">
+                <path d="M238,183 Q270,225 302,183 Q270,178 238,183Z" fill="#e3ac82"/>
+              </g>
+              <path class="lid-crease" d="M236,181 Q270,158 304,181" fill="none" stroke="#c98f68" stroke-width="2" opacity="0.55"/>
+              <g class="occluder-OS" style="display:none;">
+                <ellipse cx="270" cy="196" rx="40" ry="30" fill="#1b2431" stroke="#0a1018" stroke-width="4"/>
+                <rect x="266" y="220" width="8" height="90" rx="4" fill="#1b2431"/>
+              </g>
+            </g>
+
+            <!-- nose -->
+            <path d="M210,200 Q198,250 190,262 Q210,272 230,262 Q222,250 210,200Z" fill="none" stroke="#c98f68" stroke-width="3" stroke-linejoin="round"/>
+
+            <!-- mouth -->
+            <path id="mouthPath" class="mouth" d="M160,320 Q210,336 260,320" fill="none" stroke="#a85a45" stroke-width="6" stroke-linecap="round"/>
+          </svg>
+
+          <!-- ================= DEVICE RIGS (world space, appear near patient during exams) ================= -->
+          <svg id="autorefRig" class="device-rig" viewBox="0 0 1200 700">
+            <g id="autorefRigGroup" transform="translate(1060,300) scale(0.001)" opacity="0">
+              <rect x="-60" y="-40" width="120" height="80" rx="14" fill="#243a52" stroke="#6fb8c9" stroke-width="3"/>
+              <circle cx="-60" cy="0" r="26" fill="#0a1018" stroke="#59d6c4" stroke-width="4"/>
+              <circle cx="-60" cy="0" r="26" fill="none" stroke="#59d6c4" stroke-width="1" opacity="0.5"/>
+            </g>
+          </svg>
+
+        </div> <!-- /camera -->
+      </div> <!-- /world -->
+
+      <!-- ================= FIXED VIEWFINDER OVERLAY (device screen) ================= -->
+      <div class="viewfinder" id="viewfinder">
+        <div class="vignette"></div>
+        <div class="ring" id="ring">
+          <svg class="reticle" viewBox="0 0 200 200">
+            <circle cx="100" cy="100" r="98" fill="none" stroke="#e8a33d" stroke-width="1.5" opacity="0.55"/>
+            <line x1="100" y1="6" x2="100" y2="30" stroke="#e8a33d" stroke-width="2"/>
+            <line x1="100" y1="170" x2="100" y2="194" stroke="#e8a33d" stroke-width="2"/>
+            <line x1="6" y1="100" x2="30" y2="100" stroke="#e8a33d" stroke-width="2"/>
+            <line x1="170" y1="100" x2="194" y2="100" stroke="#e8a33d" stroke-width="2"/>
+          </svg>
+          <div class="scan-line" id="scanLine"></div>
+        </div>
+        <div class="reflex-overlay" id="reflexOverlay">
+          <div class="reflex-bar" id="reflexBar"></div>
+        </div>
+        <div class="scope-indicator" id="scopeIndicator">&#8596;</div>
+      </div>
+
+    </div> <!-- /stage -->
+
+    <!-- ================= HUD / SIDE PANEL ================= -->
+    <aside class="hud" id="hud">
+
+      <!-- ROOM / SELECT EXAM VIEW -->
+      <section class="panel" id="panel-room">
+        <h2>Examination Room</h2>
+        <p class="muted">Select an exam to begin. Click the equipment in the room, or use a button below.</p>
+        <div class="exam-buttons">
+          <button class="btn btn-primary exam-btn" data-exam="acuity">
+            <span class="exam-btn-title">Visual Acuity</span>
+            <span class="exam-btn-sub">Snellen chart test</span>
+          </button>
+          <button class="btn btn-primary exam-btn" data-exam="autorefraction">
+            <span class="exam-btn-title">Autorefraction</span>
+            <span class="exam-btn-sub">Objective refractive measurement</span>
+          </button>
+          <button class="btn btn-primary exam-btn" data-exam="retinoscopy">
+            <span class="exam-btn-title">Retinoscopy</span>
+            <span class="exam-btn-sub">Neutralize the retinal reflex</span>
+          </button>
+        </div>
+        <div class="findings" id="findingsBox">
+          <h3>Findings</h3>
+          <ul id="findingsList"><li class="muted">No findings recorded yet.</li></ul>
+        </div>
+      </section>
+
+      <!-- VISUAL ACUITY PANEL -->
+      <section class="panel hidden" id="panel-acuity">
+        <button class="btn btn-ghost back-btn" data-back>&larr; Exam Room</button>
+        <h2>Visual Acuity</h2>
+        <div class="eye-select" id="acuityEyeSelect">
+          <button class="eye-btn active" data-eye="OD">Right Eye (OD)</button>
+          <button class="eye-btn" data-eye="OS">Left Eye (OS)</button>
+        </div>
+        <div class="chart-panel" id="chartPanel">
+          <div class="chart-line-display" id="chartLineDisplay">
+            <span class="den-tag" id="denTag">20/200</span>
+            <div class="letters" id="lettersDisplay">E</div>
+          </div>
+          <div class="patient-response" id="patientResponse">Ready when you are, doctor.</div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="testLineBtn">Test This Line</button>
+          <button class="btn btn-ghost" id="stopAcuityBtn" disabled>Record Final Acuity</button>
+        </div>
+        <div class="result-box hidden" id="acuityResult"></div>
+      </section>
+
+      <!-- AUTOREFRACTION PANEL -->
+      <section class="panel hidden" id="panel-autorefraction">
+        <button class="btn btn-ghost back-btn" data-back>&larr; Exam Room</button>
+        <h2>Autorefraction</h2>
+        <div class="eye-select" id="autorefEyeSelect">
+          <button class="eye-btn active" data-eye="OD">Right Eye (OD)</button>
+          <button class="eye-btn" data-eye="OS">Left Eye (OS)</button>
+        </div>
+        <p class="muted">Ask the patient to fixate on the target inside the instrument, then begin the measurement.</p>
+        <button class="btn btn-primary" id="startAutorefBtn">Start Autorefraction</button>
+        <div class="measuring hidden" id="measuringBox">
+          <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+          <span id="measuringLabel">Aligning on pupil&hellip;</span>
+        </div>
+        <div class="result-box hidden" id="autorefResult"></div>
+      </section>
+
+      <!-- RETINOSCOPY PANEL -->
+      <section class="panel hidden" id="panel-retinoscopy">
+        <button class="btn btn-ghost back-btn" data-back>&larr; Exam Room</button>
+        <h2>Retinoscopy</h2>
+        <div class="eye-select" id="retinoEyeSelect">
+          <button class="eye-btn active" data-eye="OD">Right Eye (OD)</button>
+          <button class="eye-btn" data-eye="OS">Left Eye (OS)</button>
+        </div>
+        <button class="btn btn-primary" id="startRetinoBtn">Begin Retinoscopy</button>
+
+        <div class="retino-controls hidden" id="retinoControls">
+          <p class="muted">Sweep the streak across the pupil and add lenses until the reflex fills the pupil with no motion (neutrality).</p>
+          <div class="lens-control">
+            <button class="btn btn-ghost lens-btn" id="lensMinus">&minus; 0.25</button>
+            <div class="lens-readout"><span id="lensValue">0.00</span> D</div>
+            <button class="btn btn-ghost lens-btn" id="lensPlus">+ 0.25</button>
+          </div>
+          <div class="reflex-readout">
+            <span id="reflexMotionLabel">Motion: &mdash;</span>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="checkNeutralBtn">Check Neutralization</button>
+            <button class="btn btn-ghost" id="revealRetinoBtn">Reveal Answer</button>
+          </div>
+        </div>
+        <div class="result-box hidden" id="retinoResult"></div>
+      </section>
+
+    </aside>
+  </main>
+
+  <footer class="statusbar">
+    <span id="statusText">Simulator ready.</span>
+    <span class="statusbar-sep">&middot;</span>
+    <span>No paid services used &middot; runs fully client-side</span>
+  </footer>
+</div>
+
+<script src="app.js"></script>
+</body>
 </html>
